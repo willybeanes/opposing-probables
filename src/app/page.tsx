@@ -8,7 +8,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-bg">
-      <div className="mx-auto max-w-[1600px] bg-surface px-6 py-6 sm:px-10">
+      <div className="mx-auto max-w-[1400px] bg-surface px-8 py-8 sm:px-16 lg:px-24">
         <h1 className="mb-6 text-xl font-bold text-text-primary sm:text-2xl">
           Opposing Probables Grid
         </h1>
