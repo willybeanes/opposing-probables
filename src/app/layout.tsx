@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Opposing Probables Grid",
   description:
     "See which pitchers your MLB team is facing — an inverted FanGraphs Probables Grid.",
+  icons: {
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚾</text></svg>",
+  },
 };
 
 export default function RootLayout({
