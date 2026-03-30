@@ -8,15 +8,10 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-bg">
-      <header className="border-b border-border bg-surface px-4 py-3 sm:px-6">
-        <div className="mx-auto max-w-[1600px]">
-          <h1 className="text-xl font-bold text-text-primary sm:text-2xl">
-            Opposing Probables Grid
-          </h1>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-[1600px] bg-surface px-6 py-6 sm:px-10">
+        <h1 className="mb-6 text-xl font-bold text-text-primary sm:text-2xl">
+          Opposing Probables Grid
+        </h1>
         <Grid data={data} />
         <footer className="mt-6 text-center text-xs text-text-muted">
           Data from FanGraphs &middot; Updated{" "}
