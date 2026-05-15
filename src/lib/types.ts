@@ -1,21 +1,36 @@
+export interface FanGraphsPitcher {
+  playerId: string | null;
+  name: string | null;
+  throws: string | null;
+  UPURL: string | null;
+}
+
 export interface FanGraphsRecord {
-  TeamId: number;
-  League: string;
-  Division: string;
-  ShortName: string;
-  AbbName: string;
-  GameDate: string;
+  teamId: number;
+  league: string;
+  division: string;
+  abbName: string;
+  gameDate: string;
   dh: number;
-  AwayTeamId: number;
-  HomeTeamId: number;
-  isHome: number;
-  OpponentId: number;
-  OpponentAbbName: string;
-  teamSPPlayerId: string | null;
-  teamSPPlayerName: string | null;
-  teamSPPlayerNameRoute: string | null;
-  Throws: string | null;
-  notes: string | null;
+  isHome: boolean;
+  team: {
+    sp: FanGraphsPitcher | null;
+    primaryPitcher: FanGraphsPitcher | null;
+    opener: FanGraphsPitcher | null;
+    notes: string | null;
+  };
+  opponent: {
+    teamId: number;
+    abbName: string;
+    sp: FanGraphsPitcher | null;
+    primaryPitcher: FanGraphsPitcher | null;
+    opener: FanGraphsPitcher | null;
+    notes: string | null;
+  };
+}
+
+export interface FanGraphsResponse {
+  games: FanGraphsRecord[];
 }
 
 export interface OpposingProbable {

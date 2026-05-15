@@ -1,4 +1,4 @@
-import type { FanGraphsRecord, GridData, OpposingProbable, TeamData } from "./types";
+import type { FanGraphsRecord, FanGraphsResponse, GridData, OpposingProbable, TeamData } from "./types";
 
 const FANGRAPHS_API =
   "https://www.fangraphs.com/api/roster-resource/probables-grid/data";
@@ -27,52 +27,34 @@ export async function fetchProbablesData(): Promise<GridData> {
     throw new Error(`FanGraphs API returned ${res.status}`);
   }
 
-  const records: FanGraphsRecord[] = await res.json();
-  return buildGrid(records);
+  const json: FanGraphsResponse = await res.json();
+  return buildGrid(json.games);
 }
 
 function buildGrid(records: FanGraphsRecord[]): GridData {
   // Filter out past dates (match FanGraphs behavior: start from today)
   const today = new Date();
   const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  records = records.filter((r) => formatDate(r.GameDate).iso >= todayIso);
-
-  // Build a lookup: teamAbbr -> date -> pitcher info (this team's starter)
-  const pitcherLookup = new Map<string, Map<string, { pitcher: string | null; hand: string | null }>>();
-
-  for (const r of records) {
-    const { iso } = formatDate(r.GameDate);
-    if (!pitcherLookup.has(r.AbbName)) {
-      pitcherLookup.set(r.AbbName, new Map());
-    }
-    // Store this team's pitcher for this date
-    // For doubleheaders (dh > 0), append game number
-    const key = r.dh > 0 ? `${iso}_${r.dh}` : iso;
-    pitcherLookup.get(r.AbbName)!.set(key, {
-      pitcher: r.teamSPPlayerName,
-      hand: r.Throws,
-    });
-  }
+  records = records.filter((r) => formatDate(r.gameDate).iso >= todayIso);
 
   // Collect all unique dates
   const dateSet = new Set<string>();
   for (const r of records) {
-    dateSet.add(formatDate(r.GameDate).iso);
+    dateSet.add(formatDate(r.gameDate).iso);
   }
   const dates = [...dateSet].sort();
 
   // Group records by team
-  const teamMap = new Map<string, { shortName: string; league: string; division: string; records: FanGraphsRecord[] }>();
+  const teamMap = new Map<string, { league: string; division: string; records: FanGraphsRecord[] }>();
   for (const r of records) {
-    if (!teamMap.has(r.AbbName)) {
-      teamMap.set(r.AbbName, {
-        shortName: r.ShortName,
-        league: r.League,
-        division: r.Division,
+    if (!teamMap.has(r.abbName)) {
+      teamMap.set(r.abbName, {
+        league: r.league,
+        division: r.division,
         records: [],
       });
     }
-    teamMap.get(r.AbbName)!.records.push(r);
+    teamMap.get(r.abbName)!.records.push(r);
   }
 
   // Build opposing probables for each team
@@ -82,22 +64,19 @@ function buildGrid(records: FanGraphsRecord[]): GridData {
     const games: OpposingProbable[] = [];
 
     for (const r of info.records) {
-      const { iso, dayOfWeek } = formatDate(r.GameDate);
-      const oppAbb = r.OpponentAbbName;
-      const isAway = r.isHome === 0;
+      const { iso, dayOfWeek } = formatDate(r.gameDate);
+      const oppAbb = r.opponent.abbName;
+      const isAway = !r.isHome;
 
-      // Look up the OPPONENT's pitcher for this date
-      const oppPitcherMap = pitcherLookup.get(oppAbb);
-      const key = r.dh > 0 ? `${iso}_${r.dh}` : iso;
-      const oppPitcher = oppPitcherMap?.get(key);
+      const oppSp = r.opponent.sp;
 
       games.push({
         date: iso,
         dayOfWeek,
         opponent: oppAbb,
         isAway,
-        pitcher: oppPitcher?.pitcher ?? null,
-        hand: oppPitcher?.hand ?? null,
+        pitcher: oppSp?.name ?? null,
+        hand: oppSp?.throws ?? null,
         dh: r.dh,
       });
     }
@@ -107,7 +86,7 @@ function buildGrid(records: FanGraphsRecord[]): GridData {
 
     teams.push({
       abbName,
-      shortName: info.shortName,
+      shortName: abbName,
       league: info.league,
       division: info.division,
       games,
