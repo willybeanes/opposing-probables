@@ -3,7 +3,7 @@
     {
       "source": "/(.*)",
       "destination": "https://baseball-hopper.vercel.app/probables",
-      "permanent": true
+      "permanent": false
     }
   ]
 }
